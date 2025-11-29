@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function Login({ onToggleMode }) {
   const { signIn } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -22,8 +23,11 @@ export default function Login({ onToggleMode }) {
       console.log('Login error:', result.error.message);
       setError(result.error.message);
       setLoading(false);
+    } else {
+      console.log('Login successful, navigating to dashboard');
+      // Navigate to dashboard after successful login
+      navigate('/dashboard');
     }
-    // Note: We don't set loading to false on success because we're navigating away
   };
 
   return (

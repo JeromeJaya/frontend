@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import axios from '../utils/axios';
-import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
@@ -8,7 +7,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [merchantProfile, setMerchantProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -42,9 +40,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setMerchantProfile({ business_name: data.user.businessName });
-      // Redirect to dashboard after successful login
-      navigate('/dashboard');
-      return { error: null };
+      return { error: null, user: data.user };
     } catch (error) {
       console.error('Login error:', error);
       return { error: { message: error.response?.data?.error || 'Login failed' } };
@@ -59,9 +55,7 @@ export function AuthProvider({ children }) {
       localStorage.setItem('token', data.token);
       setUser(data.user);
       setMerchantProfile({ business_name: data.user.businessName });
-      // Redirect to dashboard after successful registration
-      navigate('/dashboard');
-      return { error: null };
+      return { error: null, user: data.user };
     } catch (error) {
       console.error('Registration error:', error);
       return { error: { message: error.response?.data?.error || 'Registration failed' } };
@@ -72,8 +66,6 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('token');
     setUser(null);
     setMerchantProfile(null);
-    // Redirect to login page after logout
-    navigate('/login');
   };
 
   return (

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
@@ -15,8 +15,18 @@ import TermsConditions from './components/Legal/TermsConditions';
 
 function AuthWrapper() {
   const [isLogin, setIsLogin] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
   console.log('AuthWrapper rendered, isLogin:', isLogin);
+
+  // Redirect to dashboard if user is already logged in
+  useEffect(() => {
+    if (user) {
+      console.log('User already authenticated, redirecting to dashboard');
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
   return isLogin ? (
     <Login onToggleMode={() => {
@@ -58,6 +68,32 @@ function Dashboard() {
   );
 }
 
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      // Redirect to login if not authenticated
+      navigate('/login', { state: { from: location.pathname } });
+    }
+  }, [user, loading, navigate, location]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return user ? children : null;
+}
+
 function AppContent() {
   const { user, loading } = useAuth();
 
@@ -78,7 +114,14 @@ function AppContent() {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-conditions" element={<TermsConditions />} />
       <Route path="/login" element={<AuthWrapper />} />
-      <Route path="/dashboard/*" element={user ? <Dashboard /> : <AuthWrapper />} />
+      <Route 
+        path="/dashboard/*" 
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
     </Routes>
   );
 }
