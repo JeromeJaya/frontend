@@ -24,7 +24,7 @@ function AuthWrapper() {
   useEffect(() => {
     if (user) {
       console.log('User already authenticated, redirecting to dashboard');
-      navigate('/dashboard');
+      navigate('/dashboard', { replace: true });
     }
   }, [user, navigate]);
 
@@ -76,7 +76,8 @@ function ProtectedRoute({ children }) {
   useEffect(() => {
     if (!loading && !user) {
       // Redirect to login if not authenticated
-      navigate('/login', { state: { from: location.pathname } });
+      console.log('User not authenticated, redirecting to login');
+      navigate('/login', { state: { from: location.pathname }, replace: true });
     }
   }, [user, loading, navigate, location]);
 
@@ -122,6 +123,8 @@ function AppContent() {
           </ProtectedRoute>
         } 
       />
+      {/* Catch-all route for 404 errors */}
+      <Route path="*" element={<div>Page not found</div>} />
     </Routes>
   );
 }

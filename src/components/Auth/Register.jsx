@@ -18,16 +18,22 @@ export default function Register({ onToggleMode }) {
     setError('');
     setLoading(true);
 
-    const result = await signUp(email, password, businessName);
+    try {
+      const result = await signUp(email, password, businessName);
 
-    if (result.error) {
-      console.log('Registration error:', result.error.message);
-      setError(result.error.message);
+      if (result.error) {
+        console.log('Registration error:', result.error.message);
+        setError(result.error.message);
+        setLoading(false);
+      } else {
+        console.log('Registration successful, navigating to dashboard');
+        // Navigate to dashboard after successful registration
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (err) {
+      console.error('Unexpected error during registration:', err);
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      console.log('Registration successful, navigating to dashboard');
-      // Navigate to dashboard after successful registration
-      navigate('/dashboard');
     }
   };
 

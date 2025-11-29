@@ -17,16 +17,22 @@ export default function Login({ onToggleMode }) {
     setError('');
     setLoading(true);
 
-    const result = await signIn(email, password);
+    try {
+      const result = await signIn(email, password);
 
-    if (result.error) {
-      console.log('Login error:', result.error.message);
-      setError(result.error.message);
+      if (result.error) {
+        console.log('Login error:', result.error.message);
+        setError(result.error.message);
+        setLoading(false);
+      } else {
+        console.log('Login successful, navigating to dashboard');
+        // Navigate to dashboard after successful login
+        navigate('/dashboard', { replace: true });
+      }
+    } catch (err) {
+      console.error('Unexpected error during login:', err);
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      console.log('Login successful, navigating to dashboard');
-      // Navigate to dashboard after successful login
-      navigate('/dashboard');
     }
   };
 
