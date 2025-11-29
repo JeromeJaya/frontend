@@ -13,13 +13,17 @@ export default function Register({ onToggleMode }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Register form submitted');
     setError('');
     setLoading(true);
 
-    const { error } = await signUp(email, password, businessName);
+    const result = await signUp(email, password, businessName);
 
-    if (error) {
-      setError(error.message);
+    if (result.error) {
+      console.log('Registration error:', result.error.message);
+      setError(result.error.message);
+    } else {
+      console.log('Registration successful');
     }
 
     setLoading(false);
@@ -106,7 +110,10 @@ export default function Register({ onToggleMode }) {
 
         <div className="mt-6 text-center">
           <button
-            onClick={onToggleMode}
+            onClick={() => {
+              console.log('Switching to login mode');
+              onToggleMode();
+            }}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             Already have an account? Sign in

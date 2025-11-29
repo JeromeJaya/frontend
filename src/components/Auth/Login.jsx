@@ -12,13 +12,17 @@ export default function Login({ onToggleMode }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Login form submitted');
     setError('');
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const result = await signIn(email, password);
 
-    if (error) {
-      setError(error.message);
+    if (result.error) {
+      console.log('Login error:', result.error.message);
+      setError(result.error.message);
+    } else {
+      console.log('Login successful');
     }
 
     setLoading(false);
@@ -89,7 +93,10 @@ export default function Login({ onToggleMode }) {
 
         <div className="mt-6 text-center">
           <button
-            onClick={onToggleMode}
+            onClick={() => {
+              console.log('Switching to signup mode');
+              onToggleMode();
+            }}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             Don't have an account? Sign up

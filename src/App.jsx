@@ -15,11 +15,19 @@ import TermsConditions from './components/Legal/TermsConditions';
 
 function AuthWrapper() {
   const [isLogin, setIsLogin] = useState(true);
+  
+  console.log('AuthWrapper rendered, isLogin:', isLogin);
 
   return isLogin ? (
-    <Login onToggleMode={() => setIsLogin(false)} />
+    <Login onToggleMode={() => {
+      console.log('Toggling to Register mode');
+      setIsLogin(false);
+    }} />
   ) : (
-    <Register onToggleMode={() => setIsLogin(true)} />
+    <Register onToggleMode={() => {
+      console.log('Toggling to Login mode');
+      setIsLogin(true);
+    }} />
   );
 }
 
