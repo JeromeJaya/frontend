@@ -62,6 +62,30 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const forgotPassword = async (email) => {
+    try {
+      console.log('Sending forgot password request for:', email);
+      const { data } = await axios.post('/auth/forgot-password', { email });
+      console.log('Forgot password request sent:', data);
+      return { error: null, message: data.message };
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      return { error: { message: error.response?.data?.error || 'Failed to send reset email' } };
+    }
+  };
+
+  const resetPassword = async (resetToken, newPassword) => {
+    try {
+      console.log('Resetting password with token:', resetToken);
+      const { data } = await axios.post('/auth/reset-password', { resetToken, newPassword });
+      console.log('Password reset successful:', data);
+      return { error: null, message: data.message };
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return { error: { message: error.response?.data?.error || 'Failed to reset password' } };
+    }
+  };
+
   const signOut = async () => {
     localStorage.removeItem('token');
     setUser(null);
@@ -69,7 +93,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, merchantProfile, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, merchantProfile, loading, signIn, signUp, forgotPassword, resetPassword, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import ResetPassword from './components/Auth/ResetPassword';
 import DashboardLayout from './components/Dashboard/DashboardLayout';
 import Overview from './components/Dashboard/Overview';
 import Customers from './components/Dashboard/Customers';
@@ -115,6 +116,7 @@ function AppContent() {
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-conditions" element={<TermsConditions />} />
       <Route path="/login" element={<AuthWrapper />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route 
         path="/dashboard/*" 
         element={

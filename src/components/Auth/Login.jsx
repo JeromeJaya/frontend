@@ -4,12 +4,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function Login({ onToggleMode }) {
-  const { signIn } = useAuth();
+  const { signIn, forgotPassword } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMessage, setForgotMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +38,104 @@ export default function Login({ onToggleMode }) {
       setLoading(false);
     }
   };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setError('');
+    setForgotMessage('');
+
+    if (!forgotEmail) {
+      setError('Please enter your email address');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const result = await forgotPassword(forgotEmail);
+
+      if (result.error) {
+        setError(result.error.message);
+      } else {
+        setForgotMessage(result.message);
+        // Clear the email field after successful submission
+        setForgotEmail('');
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">E-Rubuy</h1>
+            <p className="text-slate-600">Reset Your Password</p>
+          </div>
+
+          <Link
+            to="/login"
+            onClick={(e) => {
+              e.preventDefault();
+              setShowForgotPassword(false);
+              setError('');
+              setForgotMessage('');
+            }}
+            className="flex items-center gap-2 text-sm text-slate-600 hover:text-slate-900 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Login
+          </Link>
+
+          <form onSubmit={handleForgotPassword} className="space-y-6">
+            <div>
+              <label htmlFor="forgotEmail" className="block text-sm font-medium text-slate-700 mb-2">
+                Email Address
+              </label>
+              <input
+                id="forgotEmail"
+                type="email"
+                value={forgotEmail}
+                onChange={(e) => setForgotEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                placeholder="merchant@example.com"
+              />
+            </div>
+
+            {error && (
+              <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            {forgotMessage && (
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 text-sm">
+                {forgotMessage}
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Sending Reset Link...' : 'Send Reset Link'}
+            </button>
+
+            <div className="text-center text-sm text-slate-600">
+              <p>Enter your email address and we'll send you a link to reset your password.</p>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
@@ -81,6 +182,16 @@ export default function Login({ onToggleMode }) {
               className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
               placeholder="••••••••"
             />
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              Forgot Password?
+            </button>
           </div>
 
           {error && (
