@@ -301,6 +301,7 @@ function PaymentRequestModal({ onClose, onSuccess }) {
   const [loading, setLoading] = useState(false);
   const [loadingCustomers, setLoadingCustomers] = useState(true);
   const [error, setError] = useState('');
+  const [scriptLoading, setScriptLoading] = useState(true);
 
   useEffect(() => {
     loadCustomers();
@@ -308,11 +309,27 @@ function PaymentRequestModal({ onClose, onSuccess }) {
   }, []);
 
   const loadRazorpayScript = () => {
+    // Check if script is already loaded
+    if (window.Razorpay) {
+      setScriptLoading(false);
+      return Promise.resolve(true);
+    }
+
     return new Promise((resolve) => {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
+      script.async = true;
+      script.onload = () => {
+        console.log('Razorpay script loaded successfully');
+        setScriptLoading(false);
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error('Failed to load Razorpay script');
+        setScriptLoading(false);
+        setError('Failed to load payment gateway. Please try again.');
+        resolve(false);
+      };
       document.body.appendChild(script);
     });
   };
@@ -335,6 +352,17 @@ function PaymentRequestModal({ onClose, onSuccess }) {
     
     if (!formData.customerId || !formData.amount || parseFloat(formData.amount) <= 0) {
       setError('Please fill all fields correctly');
+      return;
+    }
+
+    // Wait for Razorpay script to load
+    if (scriptLoading) {
+      setError('Payment gateway is still loading. Please wait a moment...');
+      return;
+    }
+
+    if (!window.Razorpay) {
+      setError('Payment gateway failed to load. Please refresh the page and try again.');
       return;
     }
 
@@ -467,6 +495,12 @@ function PaymentRequestModal({ onClose, onSuccess }) {
             </div>
           )}
 
+          {scriptLoading && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-sm">
+              Loading payment gateway... Please wait.
+            </div>
+          )}
+
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -478,7 +512,7 @@ function PaymentRequestModal({ onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={loading || loadingCustomers}
+              disabled={loading || loadingCustomers || scriptLoading}
               className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {loading ? (
