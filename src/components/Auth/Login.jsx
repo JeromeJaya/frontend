@@ -21,11 +21,9 @@ export default function Login({ onToggleMode }) {
     if (result.error) {
       console.log('Login error:', result.error.message);
       setError(result.error.message);
-    } else {
-      console.log('Login successful');
+      setLoading(false);
     }
-
-    setLoading(false);
+    // Note: We don't set loading to false on success because we're navigating away
   };
 
   return (

@@ -22,11 +22,9 @@ export default function Register({ onToggleMode }) {
     if (result.error) {
       console.log('Registration error:', result.error.message);
       setError(result.error.message);
-    } else {
-      console.log('Registration successful');
+      setLoading(false);
     }
-
-    setLoading(false);
+    // Note: We don't set loading to false on success because we're navigating away
   };
 
   return (
