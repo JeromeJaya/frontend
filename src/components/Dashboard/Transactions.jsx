@@ -319,17 +319,30 @@ function PaymentRequestModal({ onClose, onSuccess }) {
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.async = true;
+      
+      // Set a timeout for script loading
+      const timeout = setTimeout(() => {
+        console.warn('Razorpay script loading timed out');
+        setScriptLoading(false);
+        setError('Payment gateway is taking too long to load. Please try again.');
+        resolve(false);
+      }, 10000); // 10 second timeout
+      
       script.onload = () => {
+        clearTimeout(timeout);
         console.log('Razorpay script loaded successfully');
         setScriptLoading(false);
         resolve(true);
       };
+      
       script.onerror = () => {
+        clearTimeout(timeout);
         console.error('Failed to load Razorpay script');
         setScriptLoading(false);
         setError('Failed to load payment gateway. Please try again.');
         resolve(false);
       };
+      
       document.body.appendChild(script);
     });
   };
@@ -377,7 +390,7 @@ function PaymentRequestModal({ onClose, onSuccess }) {
 
       console.log('Payment request created:', data);
 
-      // Open Razorpay Checkout
+      // Configure options for Razorpay with timeout handling
       const options = {
         key: data.keyId,
         amount: data.amount,
@@ -415,17 +428,27 @@ function PaymentRequestModal({ onClose, onSuccess }) {
             alert('⚠️ Payment cancelled by customer');
             setLoading(false);
           },
+          escape: false, // Prevent closing with ESC key
         },
+        timeout: 30000, // 30 second timeout for the payment modal
       };
 
       const rzp = new window.Razorpay(options);
       
       rzp.on('payment.failed', function (response) {
-        alert('❌ Payment rejected by customer');
+        console.error('Payment failed:', response.error);
+        alert(`❌ Payment failed: ${response.error.description || 'Unknown error'}`);
         setLoading(false);
       });
 
-      rzp.open();
+      // Handle potential blocking by ad blockers
+      try {
+        rzp.open();
+      } catch (openError) {
+        console.error('Failed to open Razorpay modal:', openError);
+        setError('Unable to open payment popup. Please disable ad blockers and try again.');
+        setLoading(false);
+      }
     } catch (err) {
       console.error('Payment request error:', err);
       setError(err.response?.data?.error || 'Failed to create payment request');
@@ -523,6 +546,17 @@ function PaymentRequestModal({ onClose, onSuccess }) {
             </button>
           </div>
         </form>
+        
+        {/* Ad blocker warning */}
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-yellow-700 text-xs">
+          <p className="font-medium">💡 Tip:</p>
+          <p>If the payment popup is slow or blocked, please:</p>
+          <ul className="list-disc list-inside mt-1 space-y-1">
+            <li>Disable ad blockers for this site</li>
+            <li>Allow popups in your browser settings</li>
+            <li>Try using a different browser</li>
+          </ul>
+        </div>
       </div>
     </div>
   );
